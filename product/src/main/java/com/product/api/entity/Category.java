@@ -1,7 +1,9 @@
 package com.product.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,10 +17,20 @@ public class Category {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@JsonProperty("category_id")
+	@Column(name="category_id")
     private Integer category_id;
 	
-    private String category;
+	@JsonProperty("category")
+	@Column(name="category")
+	private String category;
+	
+	@JsonProperty("tag")
+	@Column(name="tag")
     private String tag;
+	
+	@JsonProperty("status")
+	@Column(name="status")
     private Integer status;
 
     //Constructores
