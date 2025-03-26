@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-import com.product.api.dto.DtoCategoryIn;
+import com.product.api.dto.in.DtoCategoryIn;
 import com.product.api.entity.Category;
 import com.product.api.service.SvcCategory;
 import com.product.commons.dto.ApiResponse;
