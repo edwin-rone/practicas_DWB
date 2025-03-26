@@ -1,8 +1,14 @@
 package com.product.api.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +18,9 @@ import com.product.api.dto.in.DtoProductIn;
 import com.product.api.dto.out.DtoProductListOut;
 import com.product.api.dto.out.DtoProductOut;
 import com.product.api.entity.Product;
+import com.product.api.entity.ProductImage;
 import com.product.api.repository.RepoProduct;
+import com.product.api.repository.RepoProductImage;
 import com.product.commons.dto.ApiResponse;
 import com.product.commons.mapper.MapperProduct;
 import com.product.exception.ApiException;
@@ -25,7 +33,13 @@ public class SvcProductImp implements SvcProduct{
 	RepoProduct repo;
 	
 	@Autowired
+	RepoProductImage repoProductImage;
+	
+	@Autowired
 	MapperProduct mapper;
+	
+	@Value("${app.upload.dir}")
+	private String uploadDir;
 
 	@Override
 	public ResponseEntity<List<DtoProductListOut>> getProducts() {
@@ -41,12 +55,49 @@ public class SvcProductImp implements SvcProduct{
 	public ResponseEntity<DtoProductOut> getProduct(Integer id) {
 		try {
 			validateProductId(id);
+			DtoProductOut product = repo.getProduct(id);
 			
-			return new ResponseEntity<>(null, HttpStatus.OK);
+			List<String> image = readProductImageFile(id);
+			product.setImage(image);
+			
+			return new ResponseEntity<>(product, HttpStatus.OK);
 		}catch (DataAccessException e) {
 			throw new DBAccessException(e);
 		}
 	}
+	
+	private List<String> readProductImageFile(Integer customer_id) {
+	    try {
+			List<ProductImage> productImage = repoProductImage.findByProductId(customer_id);
+			if(productImage == null)
+				return "";
+			
+			String imageUrl = productImage.getImage();
+			
+			// Si la URL comienza con "/" la eliminamos para obtener la ruta relativa
+		  	 if (imageUrl.startsWith("/")) {
+		       	    imageUrl = imageUrl.substring(1);
+		   	}
+		  
+		  	 // Construir el Path
+		  	 Path imagePath = Paths.get(uploadDir, imageUrl);
+		  
+		  	 // Verifica que el archivo exista
+		   	if (!Files.exists(imagePath))
+		   	    return "";
+		  
+			// Leer los bytes de la imagen y codificarlos a Base64
+			byte[] imageBytes = Files.readAllBytes(imagePath);
+			return Base64.getEncoder().encodeToString(imageBytes);
+	    
+	    }catch (DataAccessException e) {
+	    	throw new DBAccessException(e);
+	    }catch (IOException e) {
+	    	throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al leer el archivo");
+	    }
+	}
+	
+
 
 	@Override
 	public ResponseEntity<ApiResponse> createProduct(DtoProductIn in) {
