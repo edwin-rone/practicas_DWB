@@ -1,5 +1,7 @@
 package com.product.api.dto.out;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -20,7 +22,7 @@ public class DtoProductOut {
 	private Integer status;
 	
 	@Transient
-	private String image;
+	private List<String> imageList;
 
 	public Integer getProduct_id() {
 		return product_id;
@@ -86,12 +88,12 @@ public class DtoProductOut {
 		this.status = status;
 	}
 
-	public String getImage() {
-		return image;
+	public List<String> getImage() {
+		return imageList;
 	}
 
-	public void setImage(String image) {
-		this.image = image;
+	public void setImage(List<String> imageList) {
+		this.imageList = imageList;
 	}
 	
 	

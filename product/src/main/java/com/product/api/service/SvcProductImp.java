@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -26,39 +27,73 @@ import com.product.commons.mapper.MapperProduct;
 import com.product.exception.ApiException;
 import com.product.exception.DBAccessException;
 
-@Service
+
+/**
+ * Implementación del servicio para la gestión de productos.
+ * 
+ * Esta clase implementa la interfaz SvcProduct y define la lógica de negocio para:
+ * - Obtener la lista de productos
+ * - Obtener los detalles de un producto, incluyendo sus imágenes (leyendo archivos del sistema)
+ * - Crear y actualizar productos
+ * - Habilitar o deshabilitar un producto
+ * 
+ * Se utiliza MapperProduct para transformar DTOs a entidades y viceversa,
+ * y se inyectan dos repositorios: uno para Product y otro para ProductImage.
+ */@Service
 public class SvcProductImp implements SvcProduct{
 	
-	@Autowired
+	// Repositorio para la entidad Product
+	 @Autowired
 	RepoProduct repo;
 	
+	// Repositorio para la entidad ProductImage, para trabajar con imágenes asociadas a productos
 	@Autowired
 	RepoProductImage repoProductImage;
 	
+	// Mapper para convertir entre DTOs y entidades de producto
 	@Autowired
 	MapperProduct mapper;
 	
-	@Value("${app.upload.dir}")
+	// Directorio base definido en application.properties para subir archivos
+    @Value("${app.upload.dir}")
 	private String uploadDir;
 
-	@Override
+    /**
+     * Obtiene la lista de todos los productos.
+     * Utiliza el repositorio para obtener todas las entidades Product y luego
+     * utiliza el mapper para transformarlas en una lista de DtoProductListOut.
+     *
+     * @return ResponseEntity que envuelve una lista de DtoProductListOut y el código de estado HTTP 200 OK.
+     */
+    @Override
 	public ResponseEntity<List<DtoProductListOut>> getProducts() {
 		try {
 			List<Product> products = repo.findAll();
-			return new ResponseEntity<>(mapper.fromProductList(products), HttpStatus.OK);
+			// Obtiene todos los productos de la base de datos
+            return new ResponseEntity<>(mapper.fromProductList(products), HttpStatus.OK);
 		}catch (DataAccessException e) {
-			throw new DBAccessException(e);
+			throw new DBAccessException(e);// En caso de error en la capa de datos, lanza excepción personalizada
 		}
 	}
 
+    /**
+     * Obtiene los detalles de un producto específico, incluyendo la lectura de imágenes asociadas.
+     *
+     * @param id Identificador del producto.
+     * @return ResponseEntity que envuelve un DtoProductOut con los detalles del producto y las imágenes en formato Base64.
+     */
 	@Override
 	public ResponseEntity<DtoProductOut> getProduct(Integer id) {
 		try {
+			// Verifica que el producto exista, de lo contrario lanza excepción
 			validateProductId(id);
+			// Obtiene el producto (transformado a DTO) mediante el mapper
 			DtoProductOut product = repo.getProduct(id);
-			
+			// Lee las imágenes del producto del sistema de archivos
+			// Asigna la lista de imágenes al DTO del producto
 			List<String> image = readProductImageFile(id);
-			product.setImage(image);
+			
+            product.setImage(image);
 			
 			return new ResponseEntity<>(product, HttpStatus.OK);
 		}catch (DataAccessException e) {
@@ -66,29 +101,43 @@ public class SvcProductImp implements SvcProduct{
 		}
 	}
 	
+	/**
+     * Lee los archivos de imagen asociados a un producto y los retorna en formato Base64.
+     *
+     * @param customer_id Identificador del producto.
+     * @return Lista de cadenas con la imagen en Base64 para cada registro.
+     */
 	private List<String> readProductImageFile(Integer customer_id) {
 	    try {
-			List<ProductImage> productImage = repoProductImage.findByProductId(customer_id);
-			if(productImage == null)
-				return "";
+	    	// Obtiene la lista de ProductImage asociados al producto
+            List<ProductImage> productImage = repoProductImage.findByProductId(customer_id);
+            // Si la lista es null, retorna una lista vacía mutable
+            if(productImage == null)
+				return new ArrayList<>();
 			
-			String imageUrl = productImage.getImage();
+            // Lista para almacenar las imágenes en formato Base64
+            List<String> imageUrls = new ArrayList<>();
 			
-			// Si la URL comienza con "/" la eliminamos para obtener la ruta relativa
-		  	 if (imageUrl.startsWith("/")) {
-		       	    imageUrl = imageUrl.substring(1);
-		   	}
-		  
-		  	 // Construir el Path
-		  	 Path imagePath = Paths.get(uploadDir, imageUrl);
-		  
-		  	 // Verifica que el archivo exista
-		   	if (!Files.exists(imagePath))
-		   	    return "";
-		  
-			// Leer los bytes de la imagen y codificarlos a Base64
-			byte[] imageBytes = Files.readAllBytes(imagePath);
-			return Base64.getEncoder().encodeToString(imageBytes);
+            // Itera sobre cada imagen encontrada
+			for (ProductImage pi : productImage) {
+			    String imageUrl = pi.getImage();
+			    // Si la URL comienza con "/", se elimina ese carácter para obtener la ruta relativa
+                if (imageUrl.startsWith("/")) {
+			       	    imageUrl = imageUrl.substring(1);
+			   	}
+                // Construye el path absoluto utilizando el directorio de subida y la ruta de la imagen
+               	Path imagePath = Paths.get(uploadDir, imageUrl);
+			  
+               	// Verifica si el archivo existe; si no existe, agrega una cadena vacía
+                if (!Files.exists(imagePath))
+			   		imageUrls.add("");
+                // Lee los bytes del archivo de imagen
+                byte[] imageBytes = Files.readAllBytes(imagePath);
+                // Codifica los bytes a Base64 y los agrega a la lista
+                imageUrls.add(Base64.getEncoder().encodeToString(imageBytes));
+			}
+
+			return imageUrls;
 	    
 	    }catch (DataAccessException e) {
 	    	throw new DBAccessException(e);
@@ -98,7 +147,14 @@ public class SvcProductImp implements SvcProduct{
 	}
 	
 
-
+	/**
+     * Crea un nuevo producto.
+     * Utiliza el mapper para convertir el DTO de entrada a una entidad Product y la guarda en la base de datos.
+     * Controla errores de integridad como duplicados o llaves foráneas.
+     *
+     * @param in Objeto DtoProductIn con los datos del nuevo producto.
+     * @return ResponseEntity que envuelve un ApiResponse con un mensaje de confirmación y el código 201 CREATED.
+     */
 	@Override
 	public ResponseEntity<ApiResponse> createProduct(DtoProductIn in) {
 		try {
@@ -117,6 +173,14 @@ public class SvcProductImp implements SvcProduct{
 		}
 	}
 
+	/**
+     * Actualiza los datos de un producto existente.
+     * Valida que el producto exista, convierte el DTO a entidad (incluyendo el ID) y actualiza el registro.
+     *
+     * @param id Identificador del producto a actualizar.
+     * @param in Objeto DtoProductIn con los nuevos datos.
+     * @return ResponseEntity que envuelve un ApiResponse con un mensaje de confirmación.
+     */
 	@Override
 	public ResponseEntity<ApiResponse> updateProduct(Integer id, DtoProductIn in) {
 		try {
@@ -136,6 +200,13 @@ public class SvcProductImp implements SvcProduct{
 		}
 	}
 
+	/**
+     * Habilita (activa) un producto.
+     * Valida que el producto exista, cambia su estado a 1 y lo guarda en la base de datos.
+     *
+     * @param id Identificador del producto a habilitar.
+     * @return ResponseEntity que envuelve un ApiResponse con un mensaje de confirmación.
+     */
 	@Override
 	public ResponseEntity<ApiResponse> enableProduct(Integer id) {
 		try {
@@ -149,6 +220,13 @@ public class SvcProductImp implements SvcProduct{
 		}
 	}
 
+	/**
+     * Deshabilita (desactiva) un producto.
+     * Valida que el producto exista, cambia su estado a 0 y actualiza el registro en la base de datos.
+     *
+     * @param id Identificador del producto a deshabilitar.
+     * @return ResponseEntity que envuelve un ApiResponse con un mensaje confirmando la desactivación.
+     */
 	@Override
 	public ResponseEntity<ApiResponse> disableProduct(Integer id) {
 		try {
@@ -162,6 +240,12 @@ public class SvcProductImp implements SvcProduct{
 		}
 	}
 	
+	/**
+     * Valida que el producto con el ID proporcionado exista en la base de datos.
+     * Si no existe, lanza una ApiException con estado 404 (Not Found).
+     *
+     * @param id Identificador del producto a validar.
+     */
 	private void validateProductId(Integer id) {
 		try {
 			if(repo.findById(id).isEmpty()) {

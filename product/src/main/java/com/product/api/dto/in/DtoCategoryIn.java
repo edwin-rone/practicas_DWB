@@ -9,18 +9,18 @@ import jakarta.validation.constraints.NotNull;
 public class DtoCategoryIn {
 	@JsonProperty("category")
 	@NotNull(message="La categoría es obligatoria")
-	private String region;
+	private String category;
 		
 	@JsonProperty("tag")
 	@NotNull(message="El tag es obligatorio")
 	private String tag;
 
 	public String getRegion() {
-		return region;
+		return category;
 	}
 
 	public void setRegion(String region) {
-		this.region = region;
+		this.category = region;
 	}
 
 	public String getTag() {
