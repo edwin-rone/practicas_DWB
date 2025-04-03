@@ -21,6 +21,8 @@ import com.product.api.service.SvcCategory;
 import com.product.commons.dto.ApiResponse;
 import com.product.exception.ApiException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 /**
@@ -29,6 +31,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/category")
+@Tag(name = "Category", description = "Administración de categorías")
 public class CtrlCategory {
 
 	/**
@@ -43,6 +46,7 @@ public class CtrlCategory {
      * @return Una ResponseEntity con la lista de categorías y el código de estado HTTP.
      */
 	@GetMapping
+	@Operation(summary = "Consultar categorías", description = "Retorna todas las categorías registradas en el sistema")
     public ResponseEntity<List<Category>> getCategories() {
         return svcCategory.getCategories();
     }
@@ -54,6 +58,7 @@ public class CtrlCategory {
      * @return Una ResponseEntity con la lista de categorías activas.
      */
     @GetMapping("/active")
+    @Operation(summary = "Consultar categorías activas", description = "Retorna todas las categorías registradas en el sistema con status 1")
     public ResponseEntity<List<Category>> getActiveCategories(){
     	return svcCategory.getActiveCategories();
     }

@@ -119,7 +119,7 @@ public class SvcProductImp implements SvcProduct{
             List<String> imageUrls = new ArrayList<>();
 			
             // Itera sobre cada imagen encontrada
-			for (ProductImage pi : productImage) {
+            for (ProductImage pi : productImage) {
 			    String imageUrl = pi.getImage();
 			    // Si la URL comienza con "/", se elimina ese carácter para obtener la ruta relativa
                 if (imageUrl.startsWith("/")) {
