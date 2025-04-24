@@ -43,7 +43,7 @@ public class SvcCategoryImp implements SvcCategory{
     @Override
 	public ResponseEntity<ApiResponse> createCategory(DtoCategoryIn in) {
 		try {
-			repoCategory.createCategory(in.getRegion(), in.getTag());
+			repoCategory.createCategory(in.getCategory(), in.getTag());
 			return new ResponseEntity<>(new ApiResponse("La categoría ha sido registrada"), HttpStatus.CREATED);
 		}catch (DataAccessException e) {
 			if (e.getLocalizedMessage().contains("ux_category"))
