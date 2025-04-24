@@ -61,7 +61,7 @@ public class CtrlProductImage {
      * @param id Identificador de la imagen de producto a desactivar.
      * @return ResponseEntity con un ApiResponse indicando si la operación fue exitosa.
      */
-    @PatchMapping("/{id}/disable")
+    @DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponse> disableProductImage(@PathVariable Integer id) {
     	// Llama al servicio para desactivar la imagen, pasando el ID correspondiente.
         return svc.disableProductImage(id);
