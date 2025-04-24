@@ -60,7 +60,7 @@ public class SvcCategoryImp implements SvcCategory{
 		try {
 			validateCategoryId(id);
 			repoCategory.updateCategory(id, in.getRegion(), in.getTag());
-			return new ResponseEntity<>(new ApiResponse("La región ha sido actualizada"), HttpStatus.OK);
+			return new ResponseEntity<>(new ApiResponse("La categoría ha sido actualizada"), HttpStatus.OK);
 		}catch (DataAccessException e) {
 			if (e.getLocalizedMessage().contains("ux_category"))
 				throw new ApiException(HttpStatus.CONFLICT, "El nombre de la categoría ya está registrado");
