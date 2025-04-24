@@ -19,8 +19,8 @@ public class DtoCategoryIn {
 		return category;
 	}
 
-	public void setRegion(String region) {
-		this.region = region;
+	public void setCategory(String category) {
+		this.category = category;
 	}
 
 	public String getTag() {
