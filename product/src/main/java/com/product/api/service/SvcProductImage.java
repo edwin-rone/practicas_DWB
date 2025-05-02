@@ -2,8 +2,8 @@ package com.product.api.service;
 
 import org.springframework.http.ResponseEntity;
 
+import com.product.api.commons.dto.ApiResponse;
 import com.product.api.dto.in.DtoProductImageIn;
-import com.product.commons.dto.ApiResponse;
 
 /**
  * Interfaz que define los métodos para gestionar operaciones relacionadas con
