@@ -15,12 +15,12 @@ public class DtoCategoryIn {
 	@NotNull(message="El tag es obligatorio")
 	private String tag;
 
-	public String getRegion() {
+	public String getCategory() {
 		return category;
 	}
 
-	public void setRegion(String region) {
-		this.category = region;
+	public void setCategory(String category) {
+		this.category = category;
 	}
 
 	public String getTag() {

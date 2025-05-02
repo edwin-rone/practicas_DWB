@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.product.api.commons.dto.ApiResponse;
 import com.product.api.dto.in.DtoProductIn;
 import com.product.api.dto.out.DtoProductListOut;
 import com.product.api.dto.out.DtoProductOut;
 import com.product.api.service.SvcProduct;
-import com.product.commons.dto.ApiResponse;
 import com.product.exception.ApiException;
 
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -8,10 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.product.api.commons.dto.ApiResponse;
 import com.product.api.dto.in.DtoCategoryIn;
 import com.product.api.entity.Category;
 import com.product.api.repository.RepoCategory;
-import com.product.commons.dto.ApiResponse;
 import com.product.exception.ApiException;
 import com.product.exception.DBAccessException;
 
@@ -43,7 +43,7 @@ public class SvcCategoryImp implements SvcCategory{
     @Override
 	public ResponseEntity<ApiResponse> createCategory(DtoCategoryIn in) {
 		try {
-			repoCategory.createCategory(in.getRegion(), in.getTag());
+			repoCategory.createCategory(in.getCategory(), in.getTag());
 			return new ResponseEntity<>(new ApiResponse("La categoría ha sido registrada"), HttpStatus.CREATED);
 		}catch (DataAccessException e) {
 			if (e.getLocalizedMessage().contains("ux_category"))
@@ -59,8 +59,8 @@ public class SvcCategoryImp implements SvcCategory{
 	public ResponseEntity<ApiResponse> updateCategory(DtoCategoryIn in, Integer id) {
 		try {
 			validateCategoryId(id);
-			repoCategory.updateCategory(id, in.getRegion(), in.getTag());
-			return new ResponseEntity<>(new ApiResponse("La región ha sido actualizada"), HttpStatus.OK);
+			repoCategory.updateCategory(id, in.getCategory(), in.getTag());
+			return new ResponseEntity<>(new ApiResponse("La categoría ha sido actualizada"), HttpStatus.OK);
 		}catch (DataAccessException e) {
 			if (e.getLocalizedMessage().contains("ux_category"))
 				throw new ApiException(HttpStatus.CONFLICT, "El nombre de la categoría ya está registrado");

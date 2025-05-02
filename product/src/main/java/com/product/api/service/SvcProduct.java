@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
+import com.product.api.commons.dto.ApiResponse;
 import com.product.api.dto.in.DtoProductIn;
 import com.product.api.dto.out.DtoProductListOut;
 import com.product.api.dto.out.DtoProductOut;
-import com.product.commons.dto.ApiResponse;
 
 /**
  * Interfaz que define los métodos del servicio para gestionar productos.

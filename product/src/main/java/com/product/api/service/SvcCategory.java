@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
+import com.product.api.commons.dto.ApiResponse;
 import com.product.api.dto.in.DtoCategoryIn;
 import com.product.api.entity.Category;
-import com.product.commons.dto.ApiResponse;
 
 public interface SvcCategory {
 	

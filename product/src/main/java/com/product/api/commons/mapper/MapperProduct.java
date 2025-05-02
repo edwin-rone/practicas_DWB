@@ -1,4 +1,4 @@
-package com.product.commons.mapper;
+package com.product.api.commons.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
